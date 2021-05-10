@@ -7,7 +7,7 @@ namespace People
     public class Librarian : Person
     {
         public int LibID { get; set; }
-        int EnPassword { get; set; }
+        public int EnPassword { get; set; }
 
         public Librarian() : base()
         {
@@ -23,15 +23,14 @@ namespace People
 
         public Reader SearchReader(string surname, int phoneNumber)
         {
-            var result = DB.Search("searchReader", surname, "@surname", phoneNumber, "@phone");
+            var result = DB.Search<Reader>("searchReader", surname, "@surname", phoneNumber, "@phone");
 
-            if (result.Item2 != null)
+            foreach (var entity in result)
             {
-                return new Reader(result.Item1, result.Item2, result.Item3, result.Item4,
-                    result.Item5, result.Item6, result.Item7);
+                return entity;
             }
-            else
-                return null;
+
+            return null;
         }
         public string AddReader((string, string, string, string, int) reader)
         {
@@ -68,15 +67,14 @@ namespace People
 
         public Book SearchBook(string title, int authorID)
         {
-            var result = DB.SearchBook("searchBook", title, "@title", authorID, "@authorID");
+            var result = DB.Search<Book>("searchBook", title, "@title", authorID, "@authorID");
            
-            if (result.Item2 != null)
+            foreach (var entity in result)
             {
-                return new Book(result.Item1, result.Item2, result.Item3, result.Item4,
-                    result.Item5, result.Item6, result.Item7);
+                return entity;
             }
-            else
-                return null;
+
+            return null;
         }
 
         public int LastlibCallID()
@@ -103,6 +101,12 @@ namespace People
         {
             string[] paramNames = { "@bookID", "@amount" };
             return DB.ChangeAmount("changeBookAmount", (bookID, amount), paramNames);
+        }
+
+        public bool TakePay(int readerID, double pay)
+        {
+            string[] paramNames = { "@readerID", "pay" };
+            return DB.ChangeAmount("changeReaderPay", (readerID, pay), paramNames);
         }
     }
 }

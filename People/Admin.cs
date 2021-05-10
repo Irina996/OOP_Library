@@ -1,6 +1,7 @@
 ﻿using SqlDB;
 using System;
 using System.IO;
+using Books;
 
 namespace People
 {
@@ -9,7 +10,7 @@ namespace People
         private static int Password = 1111;
         public static int readersCount = 0;
         public static int librariansCount = 0;
-        public static float cash = 0;
+        public static double cash = 0;
 
 
         public static bool IsPasswordCorrect(int password)
@@ -19,9 +20,9 @@ namespace People
             return false;
         }
 
-        public static bool ChangePassword(int oldPswd, int newPswd)
+        public static bool ChangePassword(int oldPswd, int newPswd, int pswd)
         {
-            if (oldPswd != Password)
+            if (oldPswd != Password || newPswd != pswd)
             {
                 return false;
             }
@@ -59,15 +60,13 @@ namespace People
 
         public static Librarian SearchLibrarian(string name, int password)
         {
-            var result = DB.Search("searchLibrarian", name, "@username", password, "@password");
+            var result = DB.Search<Librarian>("searchLibrarian", name, "@username", password, "@password");
 
-            if (result.Item2 != null)
+            foreach( var entity in result)
             {
-                return new Librarian(result.Item1, result.Item2, result.Item3, result.Item4,
-                    result.Item5, result.Item6, result.Item7);
+                return (Librarian)entity;
             }
-            else
-                return null;
+            return null;
         }
 
         public static string DelLibrarian((string, int) librarian)
@@ -80,7 +79,7 @@ namespace People
                 return "Библиотекарь удален";
             }
             else
-                return "Ошибкаю Библиотекарь не был удален";
+                return "Ошибка. Библиотекарь не был удален";
         }
 
         public static string WriteInfo()
@@ -94,7 +93,7 @@ namespace People
                     sw.WriteLine(Password);
                     sw.WriteLine(readersCount);
                     sw.WriteLine(librariansCount);
-                    sw.WriteLine(cash);
+                    sw.WriteLine(Math.Round(cash, 2));
                 }
                 return null;
             }
@@ -115,7 +114,7 @@ namespace People
                     Password = Convert.ToInt32(sr.ReadLine());
                     readersCount = Convert.ToInt32(sr.ReadLine());
                     librariansCount = Convert.ToInt32(sr.ReadLine());
-                    cash = (float)Convert.ToDouble(sr.ReadLine());
+                    cash = Math.Round((float)Convert.ToDouble(sr.ReadLine()), 2);
                 }
                 return null;
             }
@@ -123,6 +122,54 @@ namespace People
             {
                 return e.Message;
             }
+        }
+
+        public static int SearchAuthor(string surname, string name)
+        {
+            return DB.SearchForID("searchAuthor", surname, "@surname", name, "@name");
+        }
+
+        public static Book SearchBook(string title, int authorID)
+        {
+            var result = DB.Search<Book>("searchBook", title, "@title", authorID, "@authorID");
+
+            foreach (var entity in result)
+            {
+                return entity;
+            }
+
+            return null;
+        }
+
+        public static bool AddBook(string title, string authorSurname, string authorName, 
+            Genre genre, double collateral, double rental, int amount)
+        {
+            int authorId = SearchAuthor(authorSurname, authorName);
+
+            if (authorId == 0)
+            {
+                string[] paramN = { "@surname", "@name" };
+                if (!DB.AddEntity("addAuthor", (authorSurname, authorName), paramN))
+                {
+                    return false;
+                }
+                authorId = SearchAuthor(authorSurname, authorName);
+            }
+
+            if (SearchBook(title, authorId) != null)
+            {
+                return false;
+            }
+
+            int Genre = (int)genre;
+            if (Genre == 0)
+            {
+                return false;
+            }
+
+            string[] paramNames = { "@title", "@authorId", "@genre", "@collateralValue", "@rentalCoast", "@amount" };
+
+            return DB.AddEntity("addBook", (title, authorId, Genre, collateral, rental, amount), paramNames);
         }
     }
 }

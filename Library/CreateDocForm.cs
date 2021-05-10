@@ -34,6 +34,14 @@ namespace Library
 
         private void createLibCallBtn_Click(object sender, EventArgs e)
         {
+            // пасхалка)
+            if ( libCallGoalBox.Text == "А зачем нам это?")
+            {
+                MessageBox.Show("Лиза,блин... Я не знаю!");
+                return;
+            }    
+
+            // create library call
             (int, int, string, DateTime) libCall = (reader.ReaderID, librarian.LibID, 
                 libCallGoalBox.Text, DateTime.Now);
 
@@ -77,11 +85,12 @@ namespace Library
                     DateTime.Now, DateTime.Now.AddDays(4));
 
                 if (librarian.CreateIssuingBook(issuingBook))
-                {
-                    MessageBox.Show("Документ создан.");
+                {                    
                     book.Amount -= 1;
                     librarian.ChangeBookAmount(book.BookID, book.Amount);
                     Admin.cash += book.CollateralValue;
+                    librarian.TakePay(reader.ReaderID, book.CollateralValue - book.RentalCoast);
+                    MessageBox.Show("Документ создан.");
                 }
                 else
                     MessageBox.Show("Ошибка.Документ не создан");
@@ -113,6 +122,8 @@ namespace Library
                 book.Amount += 1;
                 librarian.ChangeBookAmount(book.BookID, book.Amount);
                 Admin.cash -= book.CollateralValue;
+                Admin.cash += book.RentalCoast;
+                librarian.TakePay(reader.ReaderID, -(book.CollateralValue - book.RentalCoast));
             }
             else
                 MessageBox.Show("Неправильный ввод");

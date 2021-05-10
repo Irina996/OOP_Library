@@ -2,8 +2,19 @@
 {
     public enum Genre
     {
-        genre = 0,
-        thriller,
+        триллер = 1,
+        детектив,
+        роман,
+        история,
+        поэма,
+        мистика,
+        приключения,
+        ужасы,
+        фентези,
+        фантастика,
+        повесть
+
+        /*thriller,
         detective,
         novel,
         story,
@@ -11,6 +22,6 @@
         mystic,
         adventure,
         horror,
-        fantasy
+        fantasy*/
     }
 }

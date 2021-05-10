@@ -2,6 +2,7 @@
 using System;
 using System.Windows.Forms;
 using TextBoxExtension;
+using System.Drawing;
 
 namespace Library
 {
@@ -18,8 +19,25 @@ namespace Library
 
         private void entryButton_Click(object sender, EventArgs e)
         {
+            // пасхалка)
+            if (loginBox.Text == "Логин" && loginBox.ForeColor != Color.Gray)
+            {
+                int pswd;
+                try
+                {
+                    pswd = Convert.ToInt32(passwordBox.Text);
+                }
+                catch
+                {
+                    MessageBox.Show("Пароль должен состоять только из цифр");
+                    return;
+                }
+                MessageBox.Show("Владимир Михайлович???");
+                return;
+            }    
+           
             // Sign in as admin
-            if (loginBox.Text == "Admin")
+            if (loginBox.Text == "Admin" || loginBox.Text == "Админ")
             {
                 int pswd;
                 try

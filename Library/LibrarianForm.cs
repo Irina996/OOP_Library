@@ -45,7 +45,6 @@ namespace Library
             Reader reader = librarian.SearchReader(surnameBox.Text, number);
             if (reader != null)
             {
-                MessageBox.Show("Читатель найден.");
                 CreateDocForm createDocForm = new CreateDocForm(librarian, reader);
                 createDocForm.Show();
                 this.Hide();

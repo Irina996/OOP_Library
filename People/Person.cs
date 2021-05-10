@@ -2,11 +2,11 @@
 {
     public abstract class Person
     {
-        protected string Surname { get; set; }
-        protected string Name { get; set; }
-        protected string Patronymic { get; set; }
-        protected string Address { get; set; }
-        protected int PhoneNumber { get; set; }
+        public string Surname { get; set; }
+        public string Name { get; set; }
+        public string Patronymic { get; set; }
+        public string Address { get; set; }
+        public int PhoneNumber { get; set; }
 
         public Person()
         {

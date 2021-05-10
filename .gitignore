@@ -3,3 +3,5 @@ packages/
 bin/
 obj/
 .vs/
+ToDo.txt
+Input.txt

@@ -1,6 +1,8 @@
 ﻿using People;
 using System;
+using System.Drawing;
 using System.Windows.Forms;
+using Books;
 
 namespace Library
 {
@@ -9,6 +11,8 @@ namespace Library
         public AdminForm()
         {
             InitializeComponent();
+
+            genreComboBox.DataSource = Enum.GetValues(typeof(Genre));
         }
 
         private void AdminForm_Load(object sender, EventArgs e)
@@ -26,7 +30,7 @@ namespace Library
 
         private void createLibrarianBtn_Click(object sender, EventArgs e)
         {
-            int number;
+            int number; // telephone number
             try
             {
                 number = Convert.ToInt32(newPhoneBox.Text);
@@ -37,7 +41,7 @@ namespace Library
                 return;
             }
 
-            int pswd;
+            int pswd; // password
             try
             {
                 pswd = Convert.ToInt32(newPswdBox.Text);
@@ -79,6 +83,70 @@ namespace Library
 
             (string, int) librarian = (surnameBox.Text, pswd);
             MessageBox.Show(Admin.DelLibrarian(librarian));
+        }
+
+        private void chngPswdBtn_Click(object sender, EventArgs e)
+        {
+            // пасхалка)
+            if (oldPswdBox.Text == "irina996" && adminPswdBox.Text == "irina996" && adminPswdBox2.Text == "irina996")
+            {
+                pictureBox1.Image = Image.FromFile(@"..\..\..\People\Zaslavl.jpg");
+                pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
+                MessageBox.Show("Любуйтесь)");
+                return;
+            }
+
+            // change admin password
+            int oldpswd, pswd, pswd2;
+            try
+            {
+                oldpswd = Convert.ToInt32(oldPswdBox.Text);
+                pswd = Convert.ToInt32(adminPswdBox.Text);
+                pswd2 = Convert.ToInt32(adminPswdBox2.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Пароль должен состоять только из цифр.");
+                return;
+            }
+            if (Admin.ChangePassword(oldpswd, pswd, pswd2))
+            {
+                MessageBox.Show("Пароль успешно изменен.");
+            }
+            else
+            {
+                MessageBox.Show("Ошибка. Пароль не был изменен.");
+            }
+        }
+
+        private void addBookBtn_Click(object sender, EventArgs e)
+        {
+            double collateral, rental;
+            int amount;
+
+            try
+            {
+                collateral = Convert.ToDouble(collateralBox.Text);
+                rental = Convert.ToDouble(rentalBox.Text);
+                amount = Convert.ToInt32(amountBox.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Стоимость и количество должны быть числами.");
+                return;
+            }
+
+            Genre genre = (Genre)genreComboBox.SelectedItem;
+
+            if (Admin.AddBook(titleBox.Text, aSurnameBox.Text, aNameBox.Text, 
+                genre, collateral, rental, amount))
+            {
+                MessageBox.Show("Книга успешно добавлена.");
+            }
+            else
+            {
+                MessageBox.Show("Ошибка. Книга не была добавлена.");
+            }
         }
     }
 }
