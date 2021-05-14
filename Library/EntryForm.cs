@@ -8,13 +8,16 @@ namespace Library
 {
     public partial class EntryForm : Form
     {
+        Admin admin;
+
         public EntryForm()
         {
             InitializeComponent();
             this.ActiveControl = label1;
             loginBox.Init("Логин", false);
             passwordBox.Init("Пароль", true);
-            Admin.ReadInfo();
+            admin = Admin.getInstance();
+            admin.ReadInfo();
         }
 
         private void entryButton_Click(object sender, EventArgs e)
@@ -32,7 +35,15 @@ namespace Library
                     MessageBox.Show("Пароль должен состоять только из цифр");
                     return;
                 }
-                MessageBox.Show("Владимир Михайлович???");
+
+                if (pswd == 110321)
+                {
+                    MessageBox.Show("Владимир Михайлович???");
+                }
+                else
+                {
+                    MessageBox.Show("Неверный логин или пароль.");
+                }
                 return;
             }    
            
@@ -49,7 +60,7 @@ namespace Library
                     MessageBox.Show("Пароль должен состоять только из цифр");
                     return;
                 }
-                if (!Admin.IsPasswordCorrect(pswd))
+                if (!admin.IsPasswordCorrect(pswd))
                 {
                     MessageBox.Show("Неверный пароль.");
                     return;
@@ -60,7 +71,7 @@ namespace Library
             }
 
             // Sign in as librarian
-            else if (loginBox.Text != "Логин" && passwordBox.Text != "Пароль")
+            else if (loginBox.ForeColor != Color.Gray && passwordBox.Text != "Пароль")
             {
                 int pswd;
                 try
@@ -75,7 +86,7 @@ namespace Library
 
                 pswd ^= 9512;
 
-                Librarian librarian = Admin.SearchLibrarian(loginBox.Text, pswd);
+                Librarian librarian = admin.SearchLibrarian(loginBox.Text, pswd);
 
                 if (librarian != null)
                 {
@@ -86,11 +97,15 @@ namespace Library
                 else
                     MessageBox.Show("Ошибка. Неправильный логин или пароль.");
             }
+            else
+            {
+                MessageBox.Show("Введите логин и пароль.");
+            }
         }
 
         private void EntryForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            string error = Admin.WriteInfo();
+            string error = admin.WriteInfo();
             if (error != null)
             {
                 MessageBox.Show(error);

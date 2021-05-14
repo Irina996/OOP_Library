@@ -9,6 +9,7 @@ namespace Library
     {
         Librarian librarian;
         Reader reader;
+        Admin admin;
 
         public CreateDocForm()
         {
@@ -19,6 +20,7 @@ namespace Library
             InitializeComponent();
             librarian = libr;
             reader = read;
+            admin = Admin.getInstance();
         }
 
         private void CreateDocForm_Load(object sender, EventArgs e)
@@ -88,7 +90,7 @@ namespace Library
                 {                    
                     book.Amount -= 1;
                     librarian.ChangeBookAmount(book.BookID, book.Amount);
-                    Admin.cash += book.CollateralValue;
+                    admin.cash += book.CollateralValue;
                     librarian.TakePay(reader.ReaderID, book.CollateralValue - book.RentalCoast);
                     MessageBox.Show("Документ создан.");
                 }
@@ -121,8 +123,8 @@ namespace Library
 
                 book.Amount += 1;
                 librarian.ChangeBookAmount(book.BookID, book.Amount);
-                Admin.cash -= book.CollateralValue;
-                Admin.cash += book.RentalCoast;
+                admin.cash -= book.CollateralValue;
+                admin.cash += book.RentalCoast;
                 librarian.TakePay(reader.ReaderID, -(book.CollateralValue - book.RentalCoast));
             }
             else

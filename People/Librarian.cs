@@ -7,7 +7,7 @@ namespace People
     public class Librarian : Person
     {
         public int LibID { get; set; }
-        public int EnPassword { get; set; }
+        private int EnPassword { get; set; }
 
         public Librarian() : base()
         {
@@ -32,49 +32,21 @@ namespace People
 
             return null;
         }
-        public string AddReader((string, string, string, string, int) reader)
+        public bool AddReader((string, string, string, string, int) reader)
         {
-            if (reader.Item1.Length < 3 && reader.Item2.Length < 3 && reader.Item3.Length < 3)
-            {
-                return "ФИО должно состоять из слов длиннее 2 букв.";
-            }
-
-            if (reader.Item4.Length < 4)
-            {
-                return "Адрес должен состоять минимум из 4 букв.";
-            }
-
-            if (reader.Item5 < 1000000 || reader.Item5 > 9999999)
-            {
-                return "Телефонный номер должен состоять из 7 цифр.";
-            }
-
             string[] paramNames = {"@surname", "@name", "@patronymic", "@address", "@phoneNumber"};
 
-            if (DB.AddEntity("addReader", reader, paramNames))
-            {
-                Admin.readersCount = Admin.readersCount + 1;
-                return "Читатель добавлен.";
-            }
-            else
-                return "Ошибка. Пользователь не был добавлен.";
+            return DB.AddEntity("addReader", reader, paramNames);
         }
 
         public int SearchAuthor(string surname, string name)
         {
-            return DB.SearchForID("searchAuthor", surname, "@surname", name, "@name");
+            return Author.SearchAuthor(surname, name);
         }
 
         public Book SearchBook(string title, int authorID)
         {
-            var result = DB.Search<Book>("searchBook", title, "@title", authorID, "@authorID");
-           
-            foreach (var entity in result)
-            {
-                return entity;
-            }
-
-            return null;
+            return Book.SearchBook(title, authorID);
         }
 
         public int LastlibCallID()

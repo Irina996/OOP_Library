@@ -8,18 +8,20 @@ namespace Library
 {
     public partial class AdminForm : Form
     {
+        Admin admin;
+
         public AdminForm()
         {
             InitializeComponent();
-
+            admin = Admin.getInstance();
             genreComboBox.DataSource = Enum.GetValues(typeof(Genre));
         }
 
         private void AdminForm_Load(object sender, EventArgs e)
         {
-            cashLabel.Text = Convert.ToString(Admin.cash);
-            readersLabel.Text = Convert.ToString(Admin.readersCount);
-            librariansLabel.Text = Convert.ToString(Admin.librariansCount);
+            cashLabel.Text = Convert.ToString(admin.cash);
+            readersLabel.Text = Convert.ToString(admin.readersCount);
+            librariansLabel.Text = Convert.ToString(admin.librariansCount);
         }
 
         private void AdminForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -55,15 +57,39 @@ namespace Library
 
             (string, string, string, string, int, int) librarian = (newSurnameBox.Text, newNameBox.Text,
                 newPatrBox.Text, newAddressBox.Text, number, pswd);
-            Librarian newLibrarian = Admin.SearchLibrarian(librarian.Item1, librarian.Item6);
+
+            Librarian newLibrarian = admin.SearchLibrarian(librarian.Item1, librarian.Item6);
             if (newLibrarian != null)
             {
                 MessageBox.Show("Библиотекарь с такими фамилией и паролем уже существует.");
             }
             else
             {
-                string addLibrarian = Admin.AddLibrarian(librarian);
-                MessageBox.Show(addLibrarian);
+                if (librarian.Item1.Length < 3 && librarian.Item2.Length < 3 && librarian.Item3.Length < 3)
+                {
+                    MessageBox.Show("ФИО должно состоять из слов длиннее 2 букв.");
+                    return;
+                }
+
+                if (librarian.Item4.Length < 4)
+                {
+                    MessageBox.Show("Адрес должен состоять минимум из 4 букв.");
+                    return;
+                }
+
+                if (librarian.Item5 < 1000000 || librarian.Item5 > 9999999)
+                {
+                    MessageBox.Show("Телефонный номер должен состоять из 7 цифр.");
+                    return;
+                }
+
+                if (admin.AddLibrarian(librarian))
+                {
+                    admin.librariansCount = admin.librariansCount + 1;
+                    MessageBox.Show("Библиотекарь успешно добавлен.");
+                }
+                else
+                    MessageBox.Show("Ошибка. Библиотекарь не был добавлен.");
             }
         }
 
@@ -82,7 +108,13 @@ namespace Library
             pswd ^= 9512; //encrypt password
 
             (string, int) librarian = (surnameBox.Text, pswd);
-            MessageBox.Show(Admin.DelLibrarian(librarian));
+
+            if (admin.DelLibrarian(librarian))
+            {
+                MessageBox.Show("Библиотекарь успешно удален.");
+            }
+            else
+                MessageBox.Show("Ошибка. Библиотекарь не был удален.");
         }
 
         private void chngPswdBtn_Click(object sender, EventArgs e)
@@ -109,7 +141,7 @@ namespace Library
                 MessageBox.Show("Пароль должен состоять только из цифр.");
                 return;
             }
-            if (Admin.ChangePassword(oldpswd, pswd, pswd2))
+            if (admin.ChangePassword(oldpswd, pswd, pswd2))
             {
                 MessageBox.Show("Пароль успешно изменен.");
             }
@@ -138,7 +170,7 @@ namespace Library
 
             Genre genre = (Genre)genreComboBox.SelectedItem;
 
-            if (Admin.AddBook(titleBox.Text, aSurnameBox.Text, aNameBox.Text, 
+            if (admin.AddBook(titleBox.Text, aSurnameBox.Text, aNameBox.Text, 
                 genre, collateral, rental, amount))
             {
                 MessageBox.Show("Книга успешно добавлена.");

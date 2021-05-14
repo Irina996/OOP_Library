@@ -7,10 +7,12 @@ namespace Library
     public partial class LibrarianForm : Form
     {
         Librarian librarian;
+        Admin admin;
 
         public LibrarianForm()
         {
             InitializeComponent();
+            admin = Admin.getInstance();
         }
 
         public LibrarianForm(Librarian libr)
@@ -75,8 +77,29 @@ namespace Library
             }
             else
             {
-                string addReaderResult = librarian.AddReader(readerFields);
-                MessageBox.Show(addReaderResult);
+                if (readerFields.Item1.Length < 3 && readerFields.Item2.Length < 3 && readerFields.Item3.Length < 3)
+                {
+                    MessageBox.Show("ФИО должно состоять из слов длиннее 2 букв.");
+                    return;
+                }
+
+                if (readerFields.Item4.Length < 4)
+                {
+                    MessageBox.Show("Адрес должен состоять минимум из 4 букв.");
+                    return;
+                }
+
+                if (readerFields.Item5 < 1000000 || readerFields.Item5 > 9999999)
+                {
+                    MessageBox.Show("Телефонный номер должен состоять из 7 цифр.");
+                }
+
+                if (librarian.AddReader(readerFields))
+                {
+                    admin.readersCount = admin.readersCount + 1;
+                }
+                else
+                    MessageBox.Show("Ошибка. Читатель не был добавлен.");
 
                 newReader = librarian.SearchReader(readerFields.Item1, readerFields.Item5);
                 if (newReader != null)
