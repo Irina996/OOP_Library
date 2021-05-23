@@ -158,5 +158,28 @@ namespace People
 
             return DB.AddEntity("addBook", (title, authorId, Genre, collateral, rental, amount), paramNames);
         }
+
+        public Reader SearchReaderByID(string surname, int readerID)
+        {
+            var result = DB.Search<Reader>("searchReaderByID", surname, "@surname", readerID, "@readerID");
+
+            foreach (var entity in result)
+            {
+                return entity;
+            }
+
+            return null;
+        }
+
+        public bool AudioBookIsPaidByReader(Reader reader, Book book)
+        {
+            var result = DB.SearchForID("isAudioBookPaid", reader.ReaderID, "@readerID", book.BookID, "@bookID");
+            if (result == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

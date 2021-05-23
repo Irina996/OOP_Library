@@ -32,11 +32,19 @@ namespace People
 
             return null;
         }
+
         public bool AddReader((string, string, string, string, int) reader)
         {
             string[] paramNames = {"@surname", "@name", "@patronymic", "@address", "@phoneNumber"};
 
             return DB.AddEntity("addReader", reader, paramNames);
+        }
+
+        public bool DelReader((string, int) reader)
+        {
+            string[] paramNames = { "@username", "@phone" };
+
+            return DB.DelEntity("deleteReader", reader, paramNames);
         }
 
         public int SearchAuthor(string surname, string name)
@@ -79,6 +87,12 @@ namespace People
         {
             string[] paramNames = { "@readerID", "pay" };
             return DB.ChangeAmount("changeReaderPay", (readerID, pay), paramNames);
+        }
+
+        public bool PayAudioBook(int readerID, int bookID)
+        {
+            string[] paramNames = { "@readerID", "@bookID" };
+            return DB.AddEntity("payAudioBook", (readerID, bookID), paramNames);
         }
     }
 }

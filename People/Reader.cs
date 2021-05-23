@@ -1,4 +1,6 @@
-﻿namespace People
+﻿using System;
+
+namespace People
 {
     public class Reader : Person
     {
@@ -15,6 +17,11 @@
         {
             ReaderID = readerID;
             Pay = pay;
+        }
+
+        public int GetPswd()
+        {
+            return this.ReaderID*1000 + Convert.ToInt32(this.PhoneNumber/10000);
         }
     }
 }

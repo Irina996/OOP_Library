@@ -1,6 +1,7 @@
 ﻿using People;
 using System;
 using System.Windows.Forms;
+using System.IO;
 using Books;
 
 namespace Library
@@ -126,9 +127,56 @@ namespace Library
                 admin.cash -= book.CollateralValue;
                 admin.cash += book.RentalCoast;
                 librarian.TakePay(reader.ReaderID, -(book.CollateralValue - book.RentalCoast));
+                MessageBox.Show("Документ создан.");
+            }
+            else if(statusBox.Text == "Аудиокнига" || statusBox.Text == "аудиокнига")
+            {
+                int authorID = librarian.SearchAuthor(authorSurnameBox.Text, authorNameBox.Text);
+                if (authorID == 0)
+                {
+                    MessageBox.Show("Автор не найден.");
+                    return;
+                }
+
+                Book book = librarian.SearchBook(TitleBox.Text, authorID);
+                if (book == null)
+                {
+                    MessageBox.Show("Книга не найдена");
+                    return;
+                }
+
+                string path = @"..\..\..\AudioBooks\" + $"{book.AuthorID} {book.Title}";
+                if(!Directory.Exists(path))
+                {
+                    MessageBox.Show("Нет такой аудиокниги.");
+                    return;
+                }
+
+                string goal = "Оплата аудиокниги";
+                (int, int, string, DateTime) libCall = (reader.ReaderID, librarian.LibID, goal, DateTime.Now);
+                if (!librarian.CreateLibCall(libCall))
+                {
+                    MessageBox.Show("Не удалось зафиксировать обращение в библиотеку.");
+                    return;
+                }
+
+                if(!librarian.PayAudioBook(reader.ReaderID, book.BookID))
+                {
+                    MessageBox.Show("Не удалось зафиксировать оплату.");
+                    return;
+                }
+
+                admin.cash += book.CollateralValue;
+                MessageBox.Show("Документ создан.");
             }
             else
                 MessageBox.Show("Неправильный ввод");
+        }
+
+        private void getReaderPswdBtn_Click(object sender, EventArgs e)
+        {
+            int pswd = reader.GetPswd();
+            MessageBox.Show(Convert.ToString(pswd));
         }
     }
 }

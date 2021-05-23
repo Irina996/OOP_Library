@@ -39,12 +39,9 @@ namespace Library
                 if (pswd == 110321)
                 {
                     MessageBox.Show("Владимир Михайлович???");
+                    return;
                 }
-                else
-                {
-                    MessageBox.Show("Неверный логин или пароль.");
-                }
-                return;
+  
             }    
            
             // Sign in as admin
@@ -93,9 +90,22 @@ namespace Library
                     LibrarianForm librarianForm = new LibrarianForm(librarian);
                     librarianForm.Show();
                     this.Hide();
+                    return;
+                }
+
+                pswd ^= 9512;
+                Reader reader = admin.SearchReaderByID(loginBox.Text, Convert.ToInt32(pswd / 1000));
+                if (reader != null && pswd == reader.GetPswd())
+                {
+                    ReaderForm readerForm = new ReaderForm(reader);
+                    readerForm.Show();
+                    this.Hide();
+                    return;
                 }
                 else
+                {
                     MessageBox.Show("Ошибка. Неправильный логин или пароль.");
+                }
             }
             else
             {

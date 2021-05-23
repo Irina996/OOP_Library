@@ -12,13 +12,13 @@ namespace Library
         public LibrarianForm()
         {
             InitializeComponent();
-            admin = Admin.getInstance();
         }
 
         public LibrarianForm(Librarian libr)
         {
             InitializeComponent();
             librarian = libr;
+            admin = Admin.getInstance();
         }
 
         private void LibrarianForm_Load(object sender, EventArgs e)
@@ -109,6 +109,30 @@ namespace Library
                     this.Hide();
                 }
             }
+        }
+
+        private void delReaderBtn_Click(object sender, EventArgs e)
+        {
+            int number;
+            try
+            {
+                number = Convert.ToInt32(delPhoneBox.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Номер телефона должен состоять только из цифр.");
+                return;
+            }
+
+            (string, int) reader = (delSurnameBox.Text, number);
+
+            if (librarian.DelReader(reader))
+            {
+                admin.readersCount += 1;
+                MessageBox.Show("Читатель успешно удален.");
+            }
+            else
+                MessageBox.Show("Ошибка. Читатель не был удален.");
         }
     }
 }

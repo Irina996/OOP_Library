@@ -117,6 +117,49 @@ namespace SqlDB
             }
         }
 
+        public static int SearchForID(string commandExpr, int firstParam, string firstParamExpr,
+            int secondParam, string secondParamExpr)
+        {
+            try
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(commandExpr, connection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                SqlParameter Param1 = new SqlParameter
+                {
+                    ParameterName = firstParamExpr,
+                    Value = firstParam
+                };
+                SqlParameter Param2 = new SqlParameter
+                {
+                    ParameterName = secondParamExpr,
+                    Value = secondParam
+                };
+
+                command.Parameters.Add(Param1);
+                command.Parameters.Add(Param2);
+
+                var DBreader = command.ExecuteReader();
+
+                int result = 0;
+
+                if (DBreader.HasRows)
+                {
+                    while (DBreader.Read())
+                    {
+                        result = DBreader.GetInt32(0);
+                    }
+                }
+                DBreader.Close();
+                return result;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
         // Add line in DB
         public static bool AddEntity(string commandExpr,
             (string, string, string, string, int) entity, string[] paramName)
@@ -278,7 +321,34 @@ namespace SqlDB
                 connection.Close();
             }
         }
+
         public static bool AddEntity(string commandExpr, (string, string) entity, string[] paramName)
+        {
+            try
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(commandExpr, connection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                SqlParameter Param1 = new SqlParameter(paramName[0], entity.Item1);
+                command.Parameters.Add(Param1);
+                SqlParameter Param2 = new SqlParameter(paramName[1], entity.Item2);
+                command.Parameters.Add(Param2);
+
+                command.ExecuteNonQuery();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public static bool AddEntity(string commandExpr, (int, int) entity, string[] paramName)
         {
             try
             {

@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.IO;
 using Books;
 
 namespace Library
@@ -173,7 +174,54 @@ namespace Library
             if (admin.AddBook(titleBox.Text, aSurnameBox.Text, aNameBox.Text, 
                 genre, collateral, rental, amount))
             {
-                MessageBox.Show("Книга успешно добавлена.");
+
+                while (true)
+                {
+                    FolderBrowserDialog FBD = new FolderBrowserDialog();
+
+                    if (FBD.ShowDialog() == DialogResult.OK)
+                    {
+                        //MessageBox.Show(FBD.SelectedPath);
+                        int authorID = admin.SearchAuthor(aSurnameBox.Text, aNameBox.Text);
+
+                        if (File.Exists(FBD.SelectedPath))
+                        {
+                            MessageBox.Show("Необходимо выбрать папку с аудиокнигой");
+                            continue;
+                        }
+
+                        DirectoryInfo selectedFolder = new DirectoryInfo(FBD.SelectedPath);
+                        string audioBookPath = @"..\..\..\AudioBooks\" + $"{authorID} {titleBox.Text}";
+                        selectedFolder.MoveTo(audioBookPath);
+
+                        DirectoryInfo audioBook = new DirectoryInfo(audioBookPath);
+                        FileInfo[] files = audioBook.GetFiles();
+
+                        foreach (FileInfo file in files)
+                        {
+                            if (file.Extension != ".mp3")
+                            {
+                                //file.Delete();
+                                try
+                                {
+                                    file.Delete();
+                                }
+                                catch
+                                {
+                                    MessageBox.Show($"Не удалось удалить {file.Name}. Выполните удаление вручную.");
+                                }
+                            }
+                        }
+
+                        MessageBox.Show("Книга и аудиокнига успешно добавлены.");
+                        break;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Книга успешно добавлена.");
+                        return;
+                    }
+                }
             }
             else
             {
