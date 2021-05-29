@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.IO;
 using People;
 using Books;
+using System.Security.AccessControl;
 
 namespace Library
 {
@@ -12,6 +13,7 @@ namespace Library
         Book book = null;
         bool canListen = false;
         string path = @"..\..\..\AudioBooks\";
+        string audioBookpath = @"..\..\..\AudioBooks\2 2";
         string[] paths;
 
         public ReaderForm()
@@ -27,6 +29,15 @@ namespace Library
 
         private void ReaderForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            string adminUserName = Environment.UserName;// getting your adminUserName
+            DirectorySecurity dirSecurity = Directory.GetAccessControl(audioBookpath);
+
+            FileSystemAccessRule rule1 = new FileSystemAccessRule(adminUserName,
+            FileSystemRights.FullControl, AccessControlType.Deny);
+            dirSecurity.AddAccessRule(rule1);
+
+            Directory.SetAccessControl(audioBookpath, dirSecurity);
+
             Form entryForm = Application.OpenForms[0];
             entryForm.Show();
         }
@@ -44,6 +55,7 @@ namespace Library
             if (authorId == 0)
             {
                 MessageBox.Show("Автор не найден. Проверьте введенные данные.");
+                return;
             }
 
             book = admin.SearchBook(TitleBox.Text, authorId);
@@ -51,6 +63,7 @@ namespace Library
             if (book == null)
             {
                 MessageBox.Show("Книга не найдена.");
+                return;
             }
             else
             {
@@ -60,6 +73,16 @@ namespace Library
             }
 
             canListen = admin.AudioBookIsPaidByReader(reader, book);
+
+
+            string adminUserName = Environment.UserName;// getting your adminUserName
+            DirectorySecurity dirSecurity = Directory.GetAccessControl(audioBookpath);
+
+            FileSystemAccessRule rule1 = new FileSystemAccessRule(adminUserName,
+            FileSystemRights.FullControl, AccessControlType.Deny);
+            dirSecurity.AddAccessRule(rule1);
+
+            Directory.SetAccessControl(audioBookpath, dirSecurity);
         }
 
         private void listBoxChapters_SelectedIndexChanged(object sender, EventArgs e)
@@ -76,9 +99,21 @@ namespace Library
             }
             else
             {
-                if (Directory.Exists(path + $"{book.AuthorID} {book.Title}"))
+                if (Directory.Exists(path + $"{book.AuthorID} {book.BookID}"))
                 {
-                    paths = Directory.GetFiles(path + $"{book.AuthorID} {book.Title}");
+                    audioBookpath = path + $"{book.AuthorID} {book.BookID}";
+
+                    // get access to file
+                    string adminUserName = Environment.UserName;// getting your adminUserName
+                    DirectorySecurity dirSecurity = Directory.GetAccessControl(audioBookpath);
+
+                    FileSystemAccessRule rule1 = new FileSystemAccessRule(adminUserName,
+                    FileSystemRights.FullControl, AccessControlType.Deny);
+                    dirSecurity.RemoveAccessRule(rule1);
+
+                    Directory.SetAccessControl(audioBookpath, dirSecurity);
+
+                    paths = Directory.GetFiles(audioBookpath);
 
                     int i = 0;
                     foreach (string p in paths)

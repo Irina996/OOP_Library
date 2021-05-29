@@ -49,7 +49,7 @@ namespace People
             
             string[] paramNames = {"@surname", "@name", "@patronymic", "@address", "@phoneNumber", "@enPassword"};
 
-            return DB.AddEntity("addLibrarian", librarian, paramNames);
+            return DB.AddEntity<string, string, string, string, int, int>("addLibrarian", librarian, paramNames);
         }
 
         public Librarian SearchLibrarian(string name, int password)
@@ -136,7 +136,7 @@ namespace People
             if (authorId == 0)
             {
                 string[] paramN = { "@surname", "@name" };
-                if (!DB.AddEntity("addAuthor", (authorSurname, authorName), paramN))
+                if (!DB.AddEntity<string>("addAuthor", (authorSurname, authorName), paramN))
                 {
                     return false;
                 }
@@ -156,7 +156,8 @@ namespace People
 
             string[] paramNames = { "@title", "@authorId", "@genre", "@collateralValue", "@rentalCoast", "@amount" };
 
-            return DB.AddEntity("addBook", (title, authorId, Genre, collateral, rental, amount), paramNames);
+            return DB.AddEntity<string, int, int, double, double, int>("addBook", 
+                (title, authorId, Genre, collateral, rental, amount), paramNames);
         }
 
         public Reader SearchReaderByID(string surname, int readerID)
@@ -173,7 +174,7 @@ namespace People
 
         public bool AudioBookIsPaidByReader(Reader reader, Book book)
         {
-            var result = DB.SearchForID("isAudioBookPaid", reader.ReaderID, "@readerID", book.BookID, "@bookID");
+            var result = DB.SearchForID<int>("isAudioBookPaid", reader.ReaderID, "@readerID", book.BookID, "@bookID");
             if (result == 0)
             {
                 return false;

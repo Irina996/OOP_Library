@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using Books;
+using System.Security.AccessControl;
 
 namespace Library
 {
@@ -183,6 +184,7 @@ namespace Library
                     {
                         //MessageBox.Show(FBD.SelectedPath);
                         int authorID = admin.SearchAuthor(aSurnameBox.Text, aNameBox.Text);
+                        Book book = admin.SearchBook(titleBox.Text, authorID);
 
                         if (File.Exists(FBD.SelectedPath))
                         {
@@ -191,7 +193,7 @@ namespace Library
                         }
 
                         DirectoryInfo selectedFolder = new DirectoryInfo(FBD.SelectedPath);
-                        string audioBookPath = @"..\..\..\AudioBooks\" + $"{authorID} {titleBox.Text}";
+                        string audioBookPath = @"..\..\..\AudioBooks\" + $"{authorID} {book.BookID}";
                         selectedFolder.MoveTo(audioBookPath);
 
                         DirectoryInfo audioBook = new DirectoryInfo(audioBookPath);
@@ -201,7 +203,6 @@ namespace Library
                         {
                             if (file.Extension != ".mp3")
                             {
-                                //file.Delete();
                                 try
                                 {
                                     file.Delete();
@@ -212,6 +213,15 @@ namespace Library
                                 }
                             }
                         }
+
+                        string adminUserName = Environment.UserName;// getting your adminUserName
+                        DirectorySecurity dirSecurity = Directory.GetAccessControl(audioBookPath);
+
+                        FileSystemAccessRule rule = new FileSystemAccessRule(adminUserName,
+                        FileSystemRights.FullControl, AccessControlType.Deny);
+                        dirSecurity.AddAccessRule(rule);
+
+                        Directory.SetAccessControl(audioBookPath, dirSecurity);
 
                         MessageBox.Show("Книга и аудиокнига успешно добавлены.");
                         break;

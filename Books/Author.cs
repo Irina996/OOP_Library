@@ -10,7 +10,7 @@ namespace Books
 
         public static int SearchAuthor(string surname, string name)
         {
-            return DB.SearchForID("searchAuthor", surname, "@surname", name, "@name");
+            return DB.SearchForID<string>("searchAuthor", surname, "@surname", name, "@name");
         }
     }
 }

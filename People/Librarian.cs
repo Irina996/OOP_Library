@@ -66,7 +66,7 @@ namespace People
         {
             string[] paramNames = { "@readerID", "@libID", "@goal", "@date" };
 
-            return DB.AddEntity("createLibraryCall", libCall, paramNames);
+            return DB.AddEntity<int, int, string, DateTime>("createLibraryCall", libCall, paramNames);
         }
 
         public bool CreateIssuingBook((int, int, DateTime, DateTime) libCall)
@@ -74,25 +74,25 @@ namespace People
 
             string[] paramNames = { "@bookID", "@libCallID", "@issueDate", "@returnDate" };
 
-            return DB.AddEntity("createIssuingBook", libCall, paramNames);
+            return DB.AddEntity<int, int, DateTime, DateTime>("createIssuingBook", libCall, paramNames);
         }
 
         public bool ChangeBookAmount(int bookID, int amount)
         {
             string[] paramNames = { "@bookID", "@amount" };
-            return DB.ChangeAmount("changeBookAmount", (bookID, amount), paramNames);
+            return DB.ChangeAmount<int, int>("changeBookAmount", (bookID, amount), paramNames);
         }
 
         public bool TakePay(int readerID, double pay)
         {
             string[] paramNames = { "@readerID", "pay" };
-            return DB.ChangeAmount("changeReaderPay", (readerID, pay), paramNames);
+            return DB.ChangeAmount<int, double>("changeReaderPay", (readerID, pay), paramNames);
         }
 
         public bool PayAudioBook(int readerID, int bookID)
         {
             string[] paramNames = { "@readerID", "@bookID" };
-            return DB.AddEntity("payAudioBook", (readerID, bookID), paramNames);
+            return DB.AddEntity<int>("payAudioBook", (readerID, bookID), paramNames);
         }
     }
 }
