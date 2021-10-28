@@ -23,7 +23,7 @@ namespace People
 
         public Reader SearchReader(string surname, int phoneNumber)
         {
-            var result = DB.Search<Reader>("searchReader", surname, "@surname", phoneNumber, "@phone");
+            var result = DB.Search<Reader, string, int>("searchReader", surname, "@surname", phoneNumber, "@phone");
 
             foreach (var entity in result)
             {
@@ -44,7 +44,7 @@ namespace People
         {
             string[] paramNames = { "@username", "@phone" };
 
-            return DB.DelEntity("deleteReader", reader, paramNames);
+            return DB.DelEntity<string, int>("deleteReader", reader, paramNames);
         }
 
         public int SearchAuthor(string surname, string name)
@@ -52,6 +52,7 @@ namespace People
             return Author.SearchAuthor(surname, name);
         }
 
+        // поиск книги по одному из авторов
         public Book SearchBook(string title, int authorID)
         {
             return Book.SearchBook(title, authorID);
@@ -89,10 +90,22 @@ namespace People
             return DB.ChangeAmount<int, double>("changeReaderPay", (readerID, pay), paramNames);
         }
 
-        public bool PayAudioBook(int readerID, int bookID)
+        public bool PayAudioBook(int readerID, int bookId)
         {
             string[] paramNames = { "@readerID", "@bookID" };
-            return DB.AddEntity<int>("payAudioBook", (readerID, bookID), paramNames);
+            return DB.AddEntity<int>("payAudioBook", (readerID, bookId), paramNames);
+        }
+
+        public bool AddReaderBook(int readerID, int bookId)
+        {
+            string[] paramNames = { "@readerID", "@bookID" };
+            return DB.AddEntity<int>("addReaderBook", (readerID, bookId), paramNames);
+        }
+
+        public bool DelReaderBook(int readerID, int bookId)
+        {
+            string[] paramNames = { "@readerID", "@bookID" };
+            return DB.DelEntity<int, int>("deleteReaderBook", (readerID, bookId), paramNames);
         }
     }
 }

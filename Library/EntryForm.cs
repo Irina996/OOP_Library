@@ -67,7 +67,7 @@ namespace Library
                 this.Hide();
             }
 
-            // Sign in as librarian
+            // Sign in as librarian or reader
             else if (loginBox.ForeColor != Color.Gray && passwordBox.Text != "Пароль")
             {
                 int pswd;

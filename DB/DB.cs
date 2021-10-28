@@ -13,8 +13,8 @@ namespace SqlDB
         
         // Search information in DB
         public static IEnumerable<T>
-            Search<T>(string commandExpr, string firstParam, string firstParamExpr, 
-            int secondParam, string secondParamExpr) where T : new()
+            Search<T, T1, T2>(string commandExpr, T1 firstParam, string firstParamExpr, 
+            T2 secondParam, string secondParamExpr) where T : new()
         {
             try
             {
@@ -35,6 +35,74 @@ namespace SqlDB
 
                 command.Parameters.Add(Param1);
                 command.Parameters.Add(Param2);
+
+                var entity = command.Read<T>();
+
+                return entity;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        public static IEnumerable<T>
+            Search<T, T1>(string commandExpr, T1 firstParam, string firstParamExpr) where T : new()
+        {
+            try
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(commandExpr, connection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                SqlParameter Param1 = new SqlParameter
+                {
+                    ParameterName = firstParamExpr,
+                    Value = firstParam
+                };
+
+                command.Parameters.Add(Param1);
+
+                var entity = command.Read<T>();
+
+                return entity;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+
+        public static IEnumerable<T>
+            Search<T, T1, T2, T3>(string commandExpr, T1 firstParam, string firstParamExpr, T2 secondParam, 
+            string secondParamExpr, T3 thirdParam, string thirdParamExpr) where T : new()
+        {
+            try
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(commandExpr, connection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                SqlParameter Param1 = new SqlParameter
+                {
+                    ParameterName = firstParamExpr,
+                    Value = firstParam
+                };
+                SqlParameter Param2 = new SqlParameter
+                {
+                    ParameterName = secondParamExpr,
+                    Value = secondParam
+                };
+                SqlParameter Param3 = new SqlParameter
+                {
+                    ParameterName = thirdParamExpr,
+                    Value = thirdParam
+                };
+
+                command.Parameters.Add(Param1);
+                command.Parameters.Add(Param2);
+                command.Parameters.Add(Param3);
 
                 var entity = command.Read<T>();
 
@@ -181,6 +249,39 @@ namespace SqlDB
             }
         }
 
+        public static bool AddEntity<T1, T2, T3, T4, T5>(string commandExpr,
+            (T1, T2, T3, T4, T5) entity, string[] paramName)
+        {
+            try
+            {
+                connection.Open();
+                SqlCommand command = new SqlCommand(commandExpr, connection);
+                command.CommandType = System.Data.CommandType.StoredProcedure;
+
+                SqlParameter Param1 = new SqlParameter(paramName[0], entity.Item1);
+                command.Parameters.Add(Param1);
+                SqlParameter Param2 = new SqlParameter(paramName[1], entity.Item2);
+                command.Parameters.Add(Param2);
+                SqlParameter Param3 = new SqlParameter(paramName[2], entity.Item3);
+                command.Parameters.Add(Param3);
+                SqlParameter Param4 = new SqlParameter(paramName[3], entity.Item4);
+                command.Parameters.Add(Param4);
+                SqlParameter Param5 = new SqlParameter(paramName[4], entity.Item5);
+                command.Parameters.Add(Param5);
+
+                command.ExecuteNonQuery();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
         public static bool AddEntity<T1, T2, T3, T4, T5, T6>(string commandExpr, 
             (T1, T2, T3, T4, T5, T6) entity, string[] paramName)
         {
@@ -243,7 +344,7 @@ namespace SqlDB
         }
 
         //  Delete line in DB
-        public static bool DelEntity(string commandExpr, (string, int) entity, string[] paramName)
+        public static bool DelEntity<T1, T2>(string commandExpr, (T1, T2) entity, string[] paramName)
         {
             try
             {

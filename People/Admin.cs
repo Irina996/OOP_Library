@@ -10,6 +10,7 @@ namespace People
         private int Password = 1111;
         public int readersCount = 0;
         public int librariansCount = 0;
+        public int booksCount = 0;
         public double cash = 0;
         private static Admin admin;
 
@@ -54,7 +55,7 @@ namespace People
 
         public Librarian SearchLibrarian(string name, int password)
         {
-            var result = DB.Search<Librarian>("searchLibrarian", name, "@username", password, "@password");
+            var result = DB.Search<Librarian, string, int>("searchLibrarian", name, "@username", password, "@password");
 
             foreach( var entity in result)
             {
@@ -67,7 +68,7 @@ namespace People
         {
             string[] paramNames = { "@username", "@password" };
 
-            if (DB.DelEntity("deleteLibrarian", librarian, paramNames))
+            if (DB.DelEntity<string, int>("deleteLibrarian", librarian, paramNames))
             {
                 admin.librariansCount = admin.librariansCount - 1;
                 return true; ;
@@ -87,6 +88,7 @@ namespace People
                     sw.WriteLine(Password);
                     sw.WriteLine(readersCount);
                     sw.WriteLine(librariansCount);
+                    sw.WriteLine(booksCount);
                     sw.WriteLine(Math.Round(cash, 2));
                 }
                 return null;
@@ -108,6 +110,7 @@ namespace People
                     Password = Convert.ToInt32(sr.ReadLine());
                     readersCount = Convert.ToInt32(sr.ReadLine());
                     librariansCount = Convert.ToInt32(sr.ReadLine());
+                    booksCount = Convert.ToInt32(sr.ReadLine());
                     cash = Math.Round((float)Convert.ToDouble(sr.ReadLine()), 2);
                 }
                 return null;
@@ -123,29 +126,44 @@ namespace People
             return Author.SearchAuthor(surname, name);
         }
 
+        // поиск книги по одному из авторов
         public Book SearchBook(string title, int authorID)
         {
             return Book.SearchBook(title, authorID);
         }
 
-        public bool AddBook(string title, string authorSurname, string authorName, 
+        public bool AddBook(string title, string[] authorSurnames, string[] authorNames,
             Genre genre, double collateral, double rental, int amount)
         {
-            int authorId = SearchAuthor(authorSurname, authorName);
-
-            if (authorId == 0)
+            int[] authorId = new int[authorNames.Length];
+            int i = 0;
+            foreach(var name in authorNames)
             {
-                string[] paramN = { "@surname", "@name" };
-                if (!DB.AddEntity<string>("addAuthor", (authorSurname, authorName), paramN))
+                authorId[i] = SearchAuthor(authorSurnames[i], name);
+                i++;
+            }
+
+            i = 0;
+
+            foreach (var id in authorId)
+            {
+                if (id== 0)
+                {
+                    string[] paramN = { "@surname", "@name" };
+                    if (!DB.AddEntity<string>("addAuthor", (authorSurnames[i], authorNames[i]), paramN))
+                    {
+                        return false;
+                    }
+                    authorId[i] = SearchAuthor(authorSurnames[i], authorNames[i]);
+                }
+                i++;
+            }
+
+            foreach(var id in authorId) { 
+                if (SearchBook(title, id) != null)
                 {
                     return false;
                 }
-                authorId = SearchAuthor(authorSurname, authorName);
-            }
-
-            if (SearchBook(title, authorId) != null)
-            {
-                return false;
             }
 
             int Genre = (int)genre;
@@ -154,15 +172,34 @@ namespace People
                 return false;
             }
 
-            string[] paramNames = { "@title", "@authorId", "@genre", "@collateralValue", "@rentalCoast", "@amount" };
+            string[] paramNames = { "@title", "@genre", "@collateralValue", "@rentalCoast", "@amount" };
 
-            return DB.AddEntity<string, int, int, double, double, int>("addBook", 
-                (title, authorId, Genre, collateral, rental, amount), paramNames);
+            if (DB.AddEntity<string, int, double, double, int>("addBook",
+                (title, Genre, collateral, rental, amount), paramNames))
+            {
+                int bookId = DB.SearchForID("getLastBookID");
+                string[] paramNs = { "@bookId", "@authorId" };
+                foreach (var id in authorId)
+                {
+                    try
+                    {
+                        DB.AddEntity<int>("addBookAuthor", (bookId, id), paramNs);
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+                booksCount += 1;
+                return true;
+            }
+
+            return false;
         }
 
         public Reader SearchReaderByID(string surname, int readerID)
         {
-            var result = DB.Search<Reader>("searchReaderByID", surname, "@surname", readerID, "@readerID");
+            var result = DB.Search<Reader, string, int>("searchReaderByID", surname, "@surname", readerID, "@readerID");
 
             foreach (var entity in result)
             {
@@ -180,6 +217,111 @@ namespace People
                 return false;
             }
             return true;
+        }
+
+        public (Book[], Author[][]) GetListOfBooks(int offset, int count)
+        {
+            var result = DB.Search<Book, int, int>("getListOfBooks", offset, "@offset", count, "@count");
+
+            Book[] books = new Book[count];
+            Author[][] authors = new Author[count][];
+
+            int i = 0;
+            foreach (var entity in result)
+            {
+                books[i] = (Book)entity;
+
+                // get authors
+                var author_list = DB.Search<Author, int>("getBookAuthors", books[i].BookID, "@bookId");
+
+                int length = 0;
+                foreach (var authour in author_list)
+                {
+                    length++;
+                }
+                authors[i] = new Author[length];
+
+                int j = 0;
+                foreach (var authour in author_list)
+                {
+                    authors[i][j] = (Author)authour;
+                    j++;
+                }
+
+                i++;
+            }
+            return (books, authors);
+        }
+
+
+        public (Book[], Author[][]) GetListOfReaderAudioBooks(int offset, int count, int readerId)
+        {
+            var result = DB.Search<Book, int, int, int>("getListOfReaderAudioBooks", offset, "@offset", count, 
+                "@count", readerId, "@readerId");
+
+            Book[] books = new Book[count];
+            Author[][] authors = new Author[count][];
+
+            int i = 0;
+            foreach (var entity in result)
+            {
+                books[i] = (Book)entity;
+
+                // get authors
+                var author_list = DB.Search<Author, int>("getBookAuthors", books[i].BookID, "@bookId");
+
+                int length = 0;
+                foreach (var authour in author_list)
+                {
+                    length++;
+                }
+                authors[i] = new Author[length];
+
+                int j = 0;
+                foreach (var authour in author_list)
+                {
+                    authors[i][j] = (Author)authour;
+                    j++;
+                }
+
+                i++;
+            }
+            return (books, authors);
+        }
+
+        public (Book[], Author[][]) GetListOfReaderBooks(int offset, int count, int readerId)
+        {
+            var result = DB.Search<Book, int, int, int>("getListOfReaderBooks", offset, "@offset", count,
+                "@count", readerId, "@readerId");
+
+            Book[] books = new Book[count];
+            Author[][] authors = new Author[count][];
+
+            int i = 0;
+            foreach (var entity in result)
+            {
+                books[i] = (Book)entity;
+
+                // get authors
+                var author_list = DB.Search<Author, int>("getBookAuthors", books[i].BookID, "@bookId");
+
+                int length = 0;
+                foreach (var authour in author_list)
+                {
+                    length++;
+                }
+                authors[i] = new Author[length];
+
+                int j = 0;
+                foreach (var authour in author_list)
+                {
+                    authors[i][j] = (Author)authour;
+                    j++;
+                }
+
+                i++;
+            }
+            return (books, authors);
         }
 
     }

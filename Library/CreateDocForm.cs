@@ -93,7 +93,9 @@ namespace Library
                     librarian.ChangeBookAmount(book.BookID, book.Amount);
                     admin.cash += book.CollateralValue;
                     librarian.TakePay(reader.ReaderID, book.CollateralValue - book.RentalCoast);
+                    librarian.AddReaderBook(reader.ReaderID, book.BookID);
                     MessageBox.Show("Документ создан.");
+
                 }
                 else
                     MessageBox.Show("Ошибка.Документ не создан");
@@ -127,6 +129,7 @@ namespace Library
                 admin.cash -= book.CollateralValue;
                 admin.cash += book.RentalCoast;
                 librarian.TakePay(reader.ReaderID, -(book.CollateralValue - book.RentalCoast));
+                librarian.DelReaderBook(reader.ReaderID, book.BookID);
                 MessageBox.Show("Документ создан.");
             }
             else if(statusBox.Text == "Аудиокнига" || statusBox.Text == "аудиокнига")
@@ -145,7 +148,7 @@ namespace Library
                     return;
                 }
 
-                string path = @"..\..\..\AudioBooks\" + $"{book.AuthorID} {book.Title}";
+                string path = @"..\..\..\AudioBooks\" + $"{book.Title}";
                 if(!Directory.Exists(path))
                 {
                     MessageBox.Show("Нет такой аудиокниги.");

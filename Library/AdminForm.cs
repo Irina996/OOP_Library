@@ -171,19 +171,35 @@ namespace Library
             }
 
             Genre genre = (Genre)genreComboBox.SelectedItem;
+            string[] surname;
+            string[] name;
 
-            if (admin.AddBook(titleBox.Text, aSurnameBox.Text, aNameBox.Text, 
+            if (aSurnameBox.Text.IndexOf(',') == -1 && aNameBox.Text.IndexOf(',') == -1)
+            {
+                surname = new string[1];
+                name = new string[1];
+                surname[0] = aSurnameBox.Text;
+                name[0] = aNameBox.Text;
+            }
+            else 
+            {
+                surname = aSurnameBox.Text.Replace(" ", "").Split(',');
+                name = aNameBox.Text.Replace(" ", "").Split(',');
+            }
+
+            if (admin.AddBook(titleBox.Text, surname, name, 
                 genre, collateral, rental, amount))
             {
 
                 while (true)
                 {
+
                     FolderBrowserDialog FBD = new FolderBrowserDialog();
 
                     if (FBD.ShowDialog() == DialogResult.OK)
                     {
                         //MessageBox.Show(FBD.SelectedPath);
-                        int authorID = admin.SearchAuthor(aSurnameBox.Text, aNameBox.Text);
+                        int authorID = admin.SearchAuthor(surname[0], name[0]);
                         Book book = admin.SearchBook(titleBox.Text, authorID);
 
                         if (File.Exists(FBD.SelectedPath))
@@ -193,7 +209,7 @@ namespace Library
                         }
 
                         DirectoryInfo selectedFolder = new DirectoryInfo(FBD.SelectedPath);
-                        string audioBookPath = @"..\..\..\AudioBooks\" + $"{authorID} {book.BookID}";
+                        string audioBookPath = @"..\..\..\AudioBooks\" + $"{book.BookID}";
                         selectedFolder.MoveTo(audioBookPath);
 
                         DirectoryInfo audioBook = new DirectoryInfo(audioBookPath);
